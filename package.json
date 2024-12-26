@@ -1,0 +1,20 @@
+{
+  "name": "youtube-watchlater",
+  "version": "1.0.0",
+  "description": "MCP server for YouTube Watch Later playlist",
+  "type": "module",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc && chmod +x build/index.js",
+    "start": "node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "*",
+    "axios": "^1.6.2",
+    "googleapis": "^129.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3"
+  }
+}
