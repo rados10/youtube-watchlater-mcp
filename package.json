@@ -2,6 +2,11 @@
   "name": "youtube-watchlater",
   "version": "1.0.0",
   "description": "MCP server for YouTube Watch Later playlist",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rados10/youtube-watchlater-mcp.git"
+  },
   "type": "module",
   "main": "build/index.js",
   "scripts": {
