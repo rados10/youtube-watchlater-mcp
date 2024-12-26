@@ -17,9 +17,10 @@ interface WatchLaterArgs {
 const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
 const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
 const OAUTH_REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
+const PLAYLIST_ID = process.env.PLAYLIST_ID;
 
-if (!OAUTH_CLIENT_ID || !OAUTH_CLIENT_SECRET || !OAUTH_REFRESH_TOKEN) {
-  throw new Error('Required environment variables missing');
+if (!OAUTH_CLIENT_ID || !OAUTH_CLIENT_SECRET || !OAUTH_REFRESH_TOKEN || !PLAYLIST_ID) {
+  throw new Error('Required environment variables missing (OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_REFRESH_TOKEN, PLAYLIST_ID)');
 }
 
 class YouTubeWatchLaterServer {
@@ -102,35 +103,92 @@ class YouTubeWatchLaterServer {
     };
 
     try {
-      // Get Watch Later playlist ID
-      const response = await this.youtube.channels.list({
-        part: ['contentDetails'],
-        mine: true
-      });
-
-      const watchLaterPlaylistId = response.data.items?.[0]?.contentDetails?.relatedPlaylists?.watchLater;
-      if (!watchLaterPlaylistId) {
-        throw new Error('Could not find Watch Later playlist');
+      interface PlaylistItem {
+        contentDetails?: {
+          videoId?: string;
+        };
+        snippet?: {
+          title?: string;
+          publishedAt?: string;
+        };
       }
 
-      // Get playlist items
-      const playlistItems = await this.youtube.playlistItems.list({
-        part: ['snippet', 'contentDetails'],
-        playlistId: watchLaterPlaylistId,
-        maxResults: 50 // Get maximum items to filter by date
-      });
+      // First verify we can access the API with our credentials
+      try {
+        const testResponse = await this.youtube.channels.list({
+          part: ['id'],
+          mine: true
+        });
+        console.error('Auth test response:', JSON.stringify(testResponse.data, null, 2));
+      } catch (error) {
+        console.error('Auth test error:', error);
+        throw new Error('Failed to authenticate with YouTube API');
+      }
 
-      const daysBack = typedArgs.daysBack ?? 1;
+      // Get all videos from configured playlist
+      let allItems: PlaylistItem[] = [];
+      let nextPageToken: string | undefined = undefined;
+
+      try {
+        do {
+          const playlistResponse: {
+            data: {
+              items?: PlaylistItem[];
+              nextPageToken?: string;
+              error?: {
+                message?: string;
+              };
+            }
+          } = await this.youtube.playlistItems.list({
+            part: ['snippet,contentDetails'],
+            playlistId: PLAYLIST_ID,
+            maxResults: 50,
+            pageToken: nextPageToken,
+            headers: {
+              Authorization: `Bearer ${this.oauth2Client.credentials.access_token}`
+            }
+          });
+
+          console.error('Playlist response:', JSON.stringify(playlistResponse.data, null, 2));
+
+          if (playlistResponse.data.error) {
+            throw new Error(`YouTube API error: ${playlistResponse.data.error.message}`);
+          }
+
+          if (playlistResponse.data.items) {
+            allItems = allItems.concat(playlistResponse.data.items);
+          }
+
+          nextPageToken = playlistResponse.data.nextPageToken;
+        } while (nextPageToken);
+      } catch (error) {
+        console.error('Playlist fetch error:', error);
+        throw error;
+      }
+
+      // Log all items for debugging
+      console.error('All items:', allItems.map(item => ({
+        videoId: item.contentDetails?.videoId,
+        title: item.snippet?.title,
+        addedAt: item.snippet?.publishedAt
+      })));
+
+      // Try getting all videos from the last 7 days instead of just today
+      const daysBack = 7;
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
-      const urls = playlistItems.data.items
-        ?.filter((item: any) => {
+      const urls = allItems
+        .map((item: any) => {
+          const videoId = item.contentDetails?.videoId;
           const addedAt = new Date(item.snippet?.publishedAt);
-          return addedAt >= cutoffDate;
+          console.error(`Video ${videoId} (${item.snippet?.title}) added at ${addedAt}`);
+          if (videoId) {
+            return `https://youtube.com/watch?v=${videoId}`;
+          }
+          return null;
         })
-        .map((item: any) => `https://youtube.com/watch?v=${item.snippet?.resourceId?.videoId}`)
-        .filter(Boolean) ?? [];
+        .filter(Boolean);
 
       return {
         content: [{

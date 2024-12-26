@@ -3,7 +3,7 @@ import express from 'express';
 import open from 'open';
 
 const app = express();
-const port = 3000;
+const port = 3399;
 
 // These will be provided by the user after creating a project in Google Cloud Console
 const CLIENT_ID = process.env.OAUTH_CLIENT_ID;
@@ -26,7 +26,9 @@ const authorizeUrl = oauth2Client.generateAuthUrl({
   access_type: 'offline',
   scope: [
     'https://www.googleapis.com/auth/youtube.readonly',
-    'https://www.googleapis.com/auth/youtube.force-ssl'
+    'https://www.googleapis.com/auth/youtube.force-ssl',
+    'https://www.googleapis.com/auth/youtubepartner',
+    'https://www.googleapis.com/auth/youtube'
   ],
   prompt: 'consent'  // Force to get refresh token
 });

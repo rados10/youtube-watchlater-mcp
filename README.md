@@ -1,10 +1,10 @@
 # YouTube Watch Later MCP Server
 
-A Model Context Protocol (MCP) server that provides access to your YouTube Watch Later playlist. The server exposes a simple tool to retrieve URLs of videos added to your Watch Later playlist within a specified timeframe.
+A Model Context Protocol (MCP) server that provides access to a custom YouTube playlist. The server exposes a simple tool to retrieve URLs of videos added to the specified playlist within a specified timeframe.
 
 ## Features
 
-- Get URLs of videos added to Watch Later within a configurable number of days
+- Get URLs of videos added to a custom playlist within a configurable number of days
 - Simple interface that returns just the video URLs
 - OAuth2 authentication for secure access to your YouTube data
 
