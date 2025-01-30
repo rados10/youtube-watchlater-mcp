@@ -1,4 +1,5 @@
 # YouTube Watch Later MCP Server
+[![smithery badge](https://smithery.ai/badge/youtube-watchlater)](https://smithery.ai/server/youtube-watchlater)
 
 A Model Context Protocol (MCP) server that provides access to a custom YouTube playlist. The server exposes a simple tool to retrieve URLs of videos added to the specified playlist within a specified timeframe.
 
@@ -10,6 +11,15 @@ A Model Context Protocol (MCP) server that provides access to a custom YouTube p
 
 ## Installation
 
+### Installing via Smithery
+
+To install YouTube Watch Later for Claude Desktop automatically via [Smithery](https://smithery.ai/server/youtube-watchlater):
+
+```bash
+npx -y @smithery/cli install youtube-watchlater --client claude
+```
+
+### Manual Installation
 1. Clone this repository:
 ```bash
 git clone https://github.com/rados10/youtube-watchlater-mcp.git
