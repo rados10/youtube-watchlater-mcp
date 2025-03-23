@@ -1,0 +1,29 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - oauthClientId
+      - oauthClientSecret
+      - oauthRefreshToken
+      - playlistId
+    properties:
+      oauthClientId:
+        type: string
+        description: The Client ID from Google Cloud Console.
+      oauthClientSecret:
+        type: string
+        description: The Client Secret from Google Cloud Console.
+      oauthRefreshToken:
+        type: string
+        description: The refresh token obtained from get-refresh-token.js script.
+      playlistId:
+        type: string
+        description: The ID of the YouTube playlist to monitor.
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'node', args: ['build/index.js'], env: { OAUTH_CLIENT_ID: config.oauthClientId, OAUTH_CLIENT_SECRET: config.oauthClientSecret, OAUTH_REFRESH_TOKEN: config.oauthRefreshToken, PLAYLIST_ID: config.playlistId } })
